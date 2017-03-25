@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.nfc.NfcAdapter;
@@ -23,66 +25,123 @@ import java.io.UnsupportedEncodingException;
 import android.content.Context;
 import android.annotation.SuppressLint;
 
+import org.iitb.common.Crypto;
+
 @SuppressLint({ "ParserError", "ParserError" })
 public class MainActivity extends AppCompatActivity {
-    private String className="MainActivity";
+    private String className = "MainActivity";
     NfcAdapter adapter;
     PendingIntent pendingIntent;
     IntentFilter writeTagFilters[];
     boolean writeMode;
     Tag mytag;
     Context ctx;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         registerNFCToAndroid();
-        Button writeToNFC=(Button)findViewById(R.id.writeToNFC);
-        ctx=this;
+        Button writeToNFC = (Button) findViewById(R.id.writeToNFC);
+        ctx = this;
 
 
     }
+
     /**
      * Register NFC
      */
-    public void registerNFCToAndroid(){
+    public void registerNFCToAndroid() {
 
         adapter = NfcAdapter.getDefaultAdapter(this);
         pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
         IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
         tagDetected.addCategory(Intent.CATEGORY_DEFAULT);
-        writeTagFilters = new IntentFilter[] { tagDetected };
+        writeTagFilters = new IntentFilter[]{tagDetected};
     }
-    public void writeToNFCClick(View v){
 
-        Button b=(Button)v;
+    public void writeToNFCClick(View v) {
 
-        Log.d(className,"Button Clicked:"+b.getText());
-        TextView uniqueId=(TextView)findViewById(R.id.uniqueId);
-        TextView name=(TextView)findViewById(R.id.name);
-        TextView number=(TextView)findViewById(R.id.number);
-        String data=uniqueId.getText()+"|"+name.getText()+"|"+number.getText();
-        Log.d(className,"data: "+data);
-        Log.d(className,"size: "+data.length());
+        Button b = (Button) v;
+
+        Log.d(className, "Button Clicked:" + b.getText());
+        TextView uniqueId = (TextView) findViewById(R.id.uniqueId);
+        TextView name = (TextView) findViewById(R.id.name);
+        TextView number = (TextView) findViewById(R.id.number);
+        RadioGroup rGroup = (RadioGroup) findViewById(R.id.radiogroup);
+        int rID = radioButtonId(rGroup);
+
+        String data = getEncrptID(uniqueId,rID) + "|" + name.getText() + "|" + number.getText() + "|" + rID;
+
+        Log.d(className, "data: " + data);
+        Log.d(className, "size: " + data.length());
+
         try {
-            if(mytag==null){
-                Toast.makeText(ctx, "Error: No NFC Detected", Toast.LENGTH_LONG ).show();
-            }else{
-                write(data,mytag);
-                Toast.makeText(ctx, "Successfully Written ", Toast.LENGTH_LONG ).show();
+            if (mytag == null) {
+                Toast.makeText(ctx, "Error: No NFC Detected", Toast.LENGTH_LONG).show();
+            } else {
+                write(data, mytag);
+                Toast.makeText(ctx, "Successfully Written ", Toast.LENGTH_LONG).show();
             }
         } catch (IOException e) {
-            Log.d(className,e.getMessage());
-            Toast.makeText(ctx, "Error: code 1", Toast.LENGTH_LONG ).show();
+            Log.d(className, e.getMessage());
+            Toast.makeText(ctx, "Error: code 1", Toast.LENGTH_LONG).show();
             e.printStackTrace();
         } catch (FormatException e) {
-            Log.d(className,e.getMessage());
-            Toast.makeText(ctx, "Error: code 2" , Toast.LENGTH_LONG ).show();
+            Log.d(className, e.getMessage());
+            Toast.makeText(ctx, "Error: code 2", Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
     }
 
+    public int radioButtonId(RadioGroup rGroup) {
+        int selectedId = rGroup.getCheckedRadioButtonId();
+        RadioButton rButton = (RadioButton) findViewById(selectedId);
+        String rtext = rButton.getText() + "";
+        int rID = 0;
+        switch (rtext){
+            case "Vehical" :
+                rID = 1;
+            break;
+            case "Person"  :
+                rID = 2;
+            break;
+        }
+        return rID;
+    }
 
+    public String getEncrptID(TextView id,int rID) {
+        String data = id.getText() + "";
+        Crypto crypt = null;
+        String encrptText = "" ;
+        try {
+            crypt = new Crypto();
+            encrptText = crypt.encrypt(data + "@" + rID);
+
+        } catch (Exception e) {
+            Log.d(className,e.getMessage());
+        }
+        return encrptText;
+    }
+
+    public void encrptBtnClick(View v) {
+        TextView uniqueId = (TextView) findViewById(R.id.uniqueId);
+        String data = uniqueId.getText() + "";
+        Log.d(className, "data: " + data);
+        Crypto crypt = null;
+        try {
+          crypt = new Crypto();
+        String encrptText = crypt.encrypt(data);
+        Log.d(className,"encrpytText: "+encrptText);
+        String decryptText = crypt.decrypt(encrptText);
+        Log.d(className,"encrypText: "+decryptText);
+
+        } catch (Exception e) {
+          Log.d(className,e.getMessage());
+    }
+
+
+}
     @Override
     protected void onNewIntent(Intent intent){
         if(NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())){
