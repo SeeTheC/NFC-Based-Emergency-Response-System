@@ -1,0 +1,3 @@
+.device>.carousel{
+	cursor: pointer;
+}
