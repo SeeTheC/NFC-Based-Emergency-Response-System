@@ -3,6 +3,7 @@ package org.iitb.nfc;
 import  android.nfc.FormatException;
 import android.nfc.NdefRecord;
 import android.nfc.tech.Ndef;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -20,12 +21,29 @@ import android.app.PendingIntent;
 import android.content.IntentFilter;
 import 	android.content.Intent;
 import android.nfc.NdefMessage;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.concurrent.ExecutionException;
+
 import android.content.Context;
 import android.annotation.SuppressLint;
 
 import org.iitb.common.Crypto;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 @SuppressLint({ "ParserError", "ParserError" })
 public class MainActivity extends AppCompatActivity {
@@ -110,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
         return rID;
     }
 
+
     public String getEncrptID(TextView id,int rID) {
         String data = id.getText() + "";
         Crypto crypt = null;
@@ -125,6 +144,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void encrptBtnClick(View v) {
+        /*
+        OpenGetHttpConnection connection = (OpenGetHttpConnection) new OpenGetHttpConnection().execute("http://10.196.12.74:9000/callEmergencyService?nfc_type_id=1&nfc_type=1");
+        try {
+            InputStream in = connection.get();
+            System.out.println(getDataFromInputStream(in));
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        */
+
+        //JsonPostRequest jp= (JsonPostRequest) new JsonPostRequest().execute();
         TextView uniqueId = (TextView) findViewById(R.id.uniqueId);
         String data = uniqueId.getText() + "";
         Log.d(className, "data: " + data);
@@ -138,10 +171,26 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (Exception e) {
           Log.d(className,e.getMessage());
+        }
+
     }
 
+    public String getDataFromInputStream(InputStream in){
 
-}
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        StringBuilder out = new StringBuilder();
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return out.toString();
+    }
+
     @Override
     protected void onNewIntent(Intent intent){
         if(NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())){
@@ -208,5 +257,116 @@ public class MainActivity extends AppCompatActivity {
     private void WriteModeOff(){
         writeMode = false;
         adapter.disableForegroundDispatch(this);
+    }
+}
+
+class OpenGetHttpConnection extends AsyncTask<String, Void, InputStream> {
+
+    @Override
+    protected InputStream doInBackground(String... params) {
+        String urlstring = params[0];
+        InputStream in = null;
+        int response = 01;
+
+        URL url = null;
+        try {
+            url = new URL(urlstring);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        URLConnection conn = null;
+        try {
+            conn = url.openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (!(conn instanceof HttpURLConnection))
+            try {
+                throw new IOException("Not an HTTP connection");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        try{
+            HttpURLConnection httpConn = (HttpURLConnection) conn;
+            httpConn.setAllowUserInteraction(false);
+            httpConn.setInstanceFollowRedirects(true);
+            httpConn.setRequestMethod("GET");
+            httpConn.connect();
+            response = httpConn.getResponseCode();
+            if (response == HttpURLConnection.HTTP_OK){
+                in = httpConn.getInputStream();
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.d("GET","Error");
+            ex.printStackTrace();
+        }
+        return in;
+
+    }
+
+}
+
+
+
+class JsonPostRequest extends AsyncTask<Void, Void, String> {
+
+    @Override
+    protected String doInBackground(Void... voids) {
+        try {
+            String address = "http://10.196.12.74:9000/callEmergencyServicePost";
+            JSONObject json = new JSONObject();
+            json.put("nfc_type_id", 1);
+            json.put("nfc_type", 1);
+            String requestBody = json.toString();
+            URL url = new URL(address);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            OutputStream outputStream = new BufferedOutputStream(urlConnection.getOutputStream());
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, "utf-8"));
+            writer.write(requestBody);
+            writer.flush();
+            writer.close();
+            outputStream.close();
+            Log.d("S","Start1");
+
+            InputStream inputStream;
+            // get stream
+            if (urlConnection.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST) {
+                inputStream = urlConnection.getInputStream();
+                Log.d("S","Start2");
+            } else {
+                inputStream = urlConnection.getErrorStream();
+                Log.d("S","Start3");
+            }
+            // parse stream
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String temp, response = "";
+            while ((temp = bufferedReader.readLine()) != null) {
+                System.out.println(temp);
+                response += temp;
+            }
+            //System.out.println(response);
+            System.out.println(urlConnection.getResponseMessage());
+            // put into JSONObject
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("Content", response);
+            jsonObject.put("Message", urlConnection.getResponseMessage());
+            jsonObject.put("Length", urlConnection.getContentLength());
+            jsonObject.put("Type", urlConnection.getContentType());
+            return jsonObject.toString();
+        } catch (IOException | JSONException e) {
+            return e.toString();
+        }
+    }
+
+    @Override
+    protected void onPostExecute(String result) {
+        System.out.println(result);
+        super.onPostExecute(result);
+        Log.d("aaa", "POST RESPONSE: " + result);
     }
 }
