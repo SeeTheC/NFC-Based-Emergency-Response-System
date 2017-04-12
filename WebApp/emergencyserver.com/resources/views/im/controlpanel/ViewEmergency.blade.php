@@ -1,6 +1,9 @@
 @extends("im.layout.Common")
 @section("content")
-
+<?php 
+use App\Http\Controllers\ControlPanel\Crypt; 
+$crypt = new Crypt();
+?>
 
 <link rel="stylesheet" type="text/css" href="{{ URL::asset('assets/css/datatables.css') }}"/> 
 <script type="text/javascript" src="{{ URL::asset('assets/js/datatables.js') }}"></script>
@@ -23,7 +26,11 @@
 
 <div class="row">		    			
 		<div class="col-sm-12 page-header text-primary" style="margin-top: 10px">
- 				<h1 style="margin-top: 1px;margin-top: 0px">Control Panel</h1> 							
+ 				<h1 style="margin-top: 1px;margin-top: 0px">Control Panel</h1> 	
+                <h3> 
+                    <label style="color: #129c26;text-decoration: underline;">View</label> |
+                    <label> <a href="/analyse"> Analysis </a> </label> 
+                </h3>						
   		</div>
 </div>
 <div class="row">
@@ -50,7 +57,7 @@
                             <td> {{$row->longitude}}</td>
                             <td> {{$row->reportedBy->first_name}} {{$row->reportedBy->last_name}}</td>                             
                             <td> 
-                                    <a href="#" target="_blank">Map</a>                                 
+                                    <a href="/map/{{$crypt->encrypt($row->id)}}" target="_blank">Map</a>                                 
                             </td>
                         </tr>
                     @endforeach

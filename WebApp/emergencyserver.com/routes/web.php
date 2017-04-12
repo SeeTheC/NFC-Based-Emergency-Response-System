@@ -10,7 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('/', function () {
+Route::get('/welcome', function () {
     return view('welcome');
 });
 Route::get('/abc', function () {
@@ -37,3 +37,10 @@ Route::get('/','ControlPanel\ControlPanelController@viewEmergency');
 Route::get('/controlpanel/view','ControlPanel\ControlPanelController@viewEmergency');
 Route::get('/callEmergencyService','ControlPanel\ControlPanelController@emergencyCallPost');
 Route::post('/callEmergencyServicePost','ControlPanel\ControlPanelController@emergencyCallPost');
+Route::get('/sendmail','ControlPanel\ControlPanelController@testMail');
+Route::get('/map/{id}','ControlPanel\ControlPanelController@map');
+Route::get('/analyse','ControlPanel\ControlPanelController@analyse');
+Route::get('/analyse/accidentstatus/{year?}','ControlPanel\ControlPanelController@getAccidentStatus');
+
+Route::get('/analyse/accidentmonthlystatus/{year?}','ControlPanel\ControlPanelController@getAccidentMonthly');
+

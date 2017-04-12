@@ -14,7 +14,8 @@
         "phpunit/phpunit": "~5.0",
         "symfony/css-selector": "3.1.*",
         "symfony/dom-crawler": "3.1.*",
-	"guzzlehttp/guzzle": "~5.3|~6.0"
+	"guzzlehttp/guzzle": "~5.3|~6.0",
+	"phpmailer/phpmailer": "dev-master"
     },
     "autoload": {
         "classmap": [

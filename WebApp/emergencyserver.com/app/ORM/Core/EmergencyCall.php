@@ -38,6 +38,7 @@ class EmergencyCall extends Model
 	*/
 	public function people()
 	{
+		
 		return $this->belongsTo("App\ORM\Core\People","user_id");
 	}
 
@@ -80,9 +81,8 @@ class EmergencyCall extends Model
 	public static function saveForm($form)
 	{
 		$result=["success"=>true,'errorMsg'=>'','rtnId'=>0];
-		$row= new EmergencyCall($form);      	    
-	    $row->user_id=1;
-	    $row->reported_by=1;       
+		$row= new EmergencyCall($form);      	    	   
+	    $row->reported_by=2;       
     	EmergencyCall::setNullables($row);	    	
     	$row->save();      	    	
 		$result["rtnId"]=$row->id;
