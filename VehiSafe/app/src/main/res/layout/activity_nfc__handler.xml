@@ -5,7 +5,52 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:backgroundTint="@color/cardview_dark_background"
     tools:context="com.example.abhishek.vehisafe.NFC_Handler">
+
+    <LinearLayout
+        android:layout_marginTop="115px"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+        <android.support.v7.widget.CardView
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/card_view"
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="50dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            card_view:cardCornerRadius="4dp"
+            android:background="@color/authui_colorPrimaryDark">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/info_text"
+                    android:text="Hello"
+                    android:fontFamily="sans-serif-medium"
+                    android:textSize="30dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"/>
+
+                <ListView
+                    android:id="@id/lv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.9"
+                     />
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+    </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -18,31 +63,10 @@
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:title="Vehisafe"
-            android:background="@android:color/holo_orange_dark"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
     </android.support.design.widget.AppBarLayout>
-
-    <LinearLayout
-        android:layout_marginTop="115px"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="441dp"
-        >
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="90px"
-            android:text="Welcome user "
-            android:textSize="90px"/>
-    </LinearLayout>
 
 
 </android.support.design.widget.CoordinatorLayout>
